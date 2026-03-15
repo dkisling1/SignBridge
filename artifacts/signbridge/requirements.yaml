@@ -1,0 +1,7 @@
+packages:
+  "framer-motion": "For smooth page transitions and revealing translation results"
+  "clsx": "For conditional tailwind classes"
+  "tailwind-merge": "For merging tailwind classes safely"
+images: []
+notes:
+  - "Using @workspace/api-client-react for generated React Query hooks."

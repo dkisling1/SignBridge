@@ -1,6 +1,5 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
   description: API specification
@@ -10,6 +9,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: translate
+    description: ASL Topic-Comment Structure translation
 paths:
   /healthz:
     get:
@@ -24,6 +25,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /translate:
+    post:
+      operationId: translateToASL
+      tags: [translate]
+      summary: Translate text to ASL Topic-Comment Structure
+      description: Translates English sentences into ASL Topic-Comment Structure format
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TranslateRequest"
+      responses:
+        "200":
+          description: Translated text in ASL Topic-Comment Structure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TranslateResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +65,62 @@ components:
           type: string
       required:
         - status
-
+    TranslateRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          description: English text to translate
+          minLength: 1
+          maxLength: 5000
+      required:
+        - text
+    TranslatedSentence:
+      type: object
+      properties:
+        original:
+          type: string
+          description: Original English sentence
+        topic:
+          type: string
+          description: The topic portion (what is being talked about)
+        comment:
+          type: string
+          description: The comment portion (what is said about the topic)
+        aslStructure:
+          type: string
+          description: Full ASL Topic-Comment structure output
+        structureType:
+          type: string
+          enum: [SVO, OSV, topicalized]
+          description: The sentence structure type used
+        notes:
+          type: string
+          description: Grammar notes explaining the structure
+      required:
+        - original
+        - topic
+        - comment
+        - aslStructure
+        - structureType
+        - notes
+    TranslateResponse:
+      type: object
+      properties:
+        sentences:
+          type: array
+          items:
+            $ref: "#/components/schemas/TranslatedSentence"
+        summary:
+          type: string
+          description: Overall translation summary
+      required:
+        - sentences
+        - summary
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

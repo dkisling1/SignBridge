@@ -5,18 +5,26 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  ErrorResponse,
+  HealthStatus,
+  TranslateRequest,
+  TranslateResponse,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +107,90 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Translates English sentences into ASL Topic-Comment Structure format
+ * @summary Translate text to ASL Topic-Comment Structure
+ */
+export const getTranslateToASLUrl = () => {
+  return `/api/translate`;
+};
+
+export const translateToASL = async (
+  translateRequest: TranslateRequest,
+  options?: RequestInit,
+): Promise<TranslateResponse> => {
+  return customFetch<TranslateResponse>(getTranslateToASLUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(translateRequest),
+  });
+};
+
+export const getTranslateToASLMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof translateToASL>>,
+    TError,
+    { data: BodyType<TranslateRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof translateToASL>>,
+  TError,
+  { data: BodyType<TranslateRequest> },
+  TContext
+> => {
+  const mutationKey = ["translateToASL"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof translateToASL>>,
+    { data: BodyType<TranslateRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return translateToASL(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type TranslateToASLMutationResult = NonNullable<
+  Awaited<ReturnType<typeof translateToASL>>
+>;
+export type TranslateToASLMutationBody = BodyType<TranslateRequest>;
+export type TranslateToASLMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Translate text to ASL Topic-Comment Structure
+ */
+export const useTranslateToASL = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof translateToASL>>,
+    TError,
+    { data: BodyType<TranslateRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof translateToASL>>,
+  TError,
+  { data: BodyType<TranslateRequest> },
+  TContext
+> => {
+  return useMutation(getTranslateToASLMutationOptions(options));
+};

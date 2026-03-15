@@ -8,3 +8,49 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface TranslateRequest {
+  /**
+   * English text to translate
+   * @minLength 1
+   * @maxLength 5000
+   */
+  text: string;
+}
+
+/**
+ * The sentence structure type used
+ */
+export type TranslatedSentenceStructureType =
+  (typeof TranslatedSentenceStructureType)[keyof typeof TranslatedSentenceStructureType];
+
+export const TranslatedSentenceStructureType = {
+  SVO: "SVO",
+  OSV: "OSV",
+  topicalized: "topicalized",
+} as const;
+
+export interface TranslatedSentence {
+  /** Original English sentence */
+  original: string;
+  /** The topic portion (what is being talked about) */
+  topic: string;
+  /** The comment portion (what is said about the topic) */
+  comment: string;
+  /** Full ASL Topic-Comment structure output */
+  aslStructure: string;
+  /** The sentence structure type used */
+  structureType: TranslatedSentenceStructureType;
+  /** Grammar notes explaining the structure */
+  notes: string;
+}
+
+export interface TranslateResponse {
+  sentences: TranslatedSentence[];
+  /** Overall translation summary */
+  summary: string;
+}
+
+export interface ErrorResponse {
+  error: string;
+}

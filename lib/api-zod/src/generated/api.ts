@@ -14,3 +14,39 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Translates English sentences into ASL Topic-Comment Structure format
+ * @summary Translate text to ASL Topic-Comment Structure
+ */
+export const translateToASLBodyTextMax = 5000;
+
+export const TranslateToASLBody = zod.object({
+  text: zod
+    .string()
+    .min(1)
+    .max(translateToASLBodyTextMax)
+    .describe("English text to translate"),
+});
+
+export const TranslateToASLResponse = zod.object({
+  sentences: zod.array(
+    zod.object({
+      original: zod.string().describe("Original English sentence"),
+      topic: zod
+        .string()
+        .describe("The topic portion (what is being talked about)"),
+      comment: zod
+        .string()
+        .describe("The comment portion (what is said about the topic)"),
+      aslStructure: zod
+        .string()
+        .describe("Full ASL Topic-Comment structure output"),
+      structureType: zod
+        .enum(["SVO", "OSV", "topicalized"])
+        .describe("The sentence structure type used"),
+      notes: zod.string().describe("Grammar notes explaining the structure"),
+    }),
+  ),
+  summary: zod.string().describe("Overall translation summary"),
+});
