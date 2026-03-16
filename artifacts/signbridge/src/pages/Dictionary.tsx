@@ -1,0 +1,227 @@
+import { useState } from "react";
+import { Search, Loader2, Tag, MessageSquare, Info, BookOpen, Hand } from "lucide-react";
+import { useLookupWord } from "@workspace/api-client-react";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import type { DictionaryResponse, DictionaryExampleSentence } from "@workspace/api-client-react";
+
+function StructureBadge({ type }: { type: DictionaryExampleSentence["structureType"] }) {
+  return (
+    <span className={cn(
+      "px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider",
+      type === "topicalized" ? "bg-topic/15 text-topic" :
+      type === "OSV" ? "bg-orange-500/15 text-orange-600" :
+      "bg-primary/15 text-primary"
+    )}>
+      {type === "topicalized" ? "Topicalized" : type}
+    </span>
+  );
+}
+
+function ExampleCard({ example, index }: { example: DictionaryExampleSentence; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: 0.1 + index * 0.1 }}
+      className="bg-card rounded-xl border border-border/60 p-4 space-y-3"
+    >
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted-foreground italic flex-1">
+          "{example.english}"
+        </p>
+        <StructureBadge type={example.structureType} />
+      </div>
+
+      {/* ASL gloss output */}
+      <div className="bg-background rounded-lg border border-border px-4 py-3">
+        <p className="font-mono font-bold text-lg tracking-wide">
+          <span className="text-topic">{example.topic}</span>
+          {" "}
+          <span className="text-comment">{example.comment}</span>
+        </p>
+      </div>
+
+      {/* Topic/Comment breakdown */}
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-topic uppercase tracking-wider">
+            <Tag className="w-3 h-3" />
+            <span>Topic</span>
+          </div>
+          <div className="bg-topic/5 border-l-2 border-topic rounded-r px-2 py-1.5 font-medium text-foreground">
+            {example.topic}
+          </div>
+        </div>
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-comment uppercase tracking-wider">
+            <MessageSquare className="w-3 h-3" />
+            <span>Comment</span>
+          </div>
+          <div className="bg-comment/5 border-l-2 border-comment rounded-r px-2 py-1.5 font-medium text-foreground">
+            {example.comment}
+          </div>
+        </div>
+      </div>
+
+      {example.notes && (
+        <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
+          <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+          <span>{example.notes}</span>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function DictionaryEntry({ entry }: { entry: DictionaryResponse }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-6"
+    >
+      {/* Word header */}
+      <div className="bg-card rounded-2xl border border-border shadow-md overflow-hidden">
+        <div className="p-6 border-b border-border">
+          <div className="flex items-baseline gap-3 flex-wrap mb-2">
+            <h2 className="font-display text-3xl font-extrabold text-foreground capitalize">
+              {entry.word}
+            </h2>
+            <span className="text-sm font-medium text-muted-foreground italic bg-secondary px-3 py-0.5 rounded-full">
+              {entry.partOfSpeech}
+            </span>
+          </div>
+          <p className="text-base text-foreground leading-relaxed">{entry.definition}</p>
+        </div>
+
+        {/* ASL Sign description */}
+        <div className="px-6 py-4 bg-primary/5 flex items-start gap-3">
+          <Hand className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">ASL Sign</p>
+            <p className="text-sm text-foreground/80">{entry.aslSign}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Example sentences */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-muted-foreground" />
+          <h3 className="font-semibold text-foreground">Example Sentences in Topic-Comment Structure</h3>
+        </div>
+
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pb-1">
+          <div className="flex items-center gap-1.5">
+            <Tag className="w-3 h-3 text-topic" />
+            <span className="text-topic font-semibold">Topic</span>
+            <span>— what is being talked about</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <MessageSquare className="w-3 h-3 text-comment" />
+            <span className="text-comment font-semibold">Comment</span>
+            <span>— what is said about it</span>
+          </div>
+        </div>
+
+        {entry.examples.map((example, i) => (
+          <ExampleCard key={i} example={example} index={i} />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+export default function Dictionary() {
+  const [word, setWord] = useState("");
+  const [entry, setEntry] = useState<DictionaryResponse | null>(null);
+  const { toast } = useToast();
+
+  const lookupMutation = useLookupWord({
+    mutation: {
+      onSuccess: (data) => {
+        setEntry(data);
+      },
+      onError: (error) => {
+        toast({
+          title: "Lookup failed",
+          description: error.message || "An error occurred during lookup.",
+          variant: "destructive",
+        });
+      }
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!word.trim()) return;
+    lookupMutation.mutate({ data: { word: word.trim() } });
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <section className="space-y-3 text-center max-w-3xl mx-auto pt-2">
+        <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
+          ASL{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-topic">
+            Dictionary
+          </span>
+        </h2>
+        <p className="text-lg text-muted-foreground leading-relaxed">
+          Look up any word and see its definition alongside two example sentences in Topic-Comment structure.
+        </p>
+      </section>
+
+      {/* Search form */}
+      <form onSubmit={handleSubmit} className="flex gap-3 max-w-xl mx-auto">
+        <div className="relative flex-1 group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-topic/30 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
+          <div className="relative flex items-center bg-card border border-border rounded-xl overflow-hidden focus-within:border-primary/50 shadow-sm transition-colors">
+            <Search className="w-4 h-4 text-muted-foreground ml-4 shrink-0" />
+            <input
+              type="text"
+              value={word}
+              onChange={(e) => setWord(e.target.value)}
+              placeholder="Enter a word (e.g. happy, run, school)..."
+              className="flex-1 px-3 py-3.5 bg-transparent text-foreground placeholder:text-muted-foreground/60 focus:outline-none text-base"
+              disabled={lookupMutation.isPending}
+            />
+          </div>
+        </div>
+        <button
+          type="submit"
+          disabled={lookupMutation.isPending || !word.trim()}
+          className={cn(
+            "flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white shadow-lg transition-all duration-300",
+            lookupMutation.isPending
+              ? "bg-muted text-muted-foreground shadow-none cursor-not-allowed"
+              : "bg-primary hover:shadow-primary/25 hover:-translate-y-0.5 active:translate-y-0"
+          )}
+        >
+          {lookupMutation.isPending ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <Search className="w-5 h-5" />
+          )}
+          <span className="hidden sm:inline">
+            {lookupMutation.isPending ? "Looking up..." : "Look up"}
+          </span>
+        </button>
+      </form>
+
+      {/* Result */}
+      <AnimatePresence mode="wait">
+        {entry && (
+          <div className="pt-2 border-t border-border">
+            <DictionaryEntry entry={entry} />
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

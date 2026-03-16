@@ -12,15 +12,11 @@ interface TranslationFormProps {
 export function TranslationForm({ onTranslateComplete }: TranslationFormProps) {
   const [text, setText] = useState("");
   const { toast } = useToast();
-  
+
   const translateMutation = useTranslateToASL({
     mutation: {
       onSuccess: (data) => {
         onTranslateComplete(data);
-        toast({
-          title: "Translation complete",
-          description: "Successfully mapped to ASL structure.",
-        });
       },
       onError: (error) => {
         toast({
@@ -54,11 +50,10 @@ export function TranslationForm({ onTranslateComplete }: TranslationFormProps) {
             <Languages className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm font-medium text-muted-foreground">English Input</span>
           </div>
-          
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Type or paste english sentences here..."
+            placeholder="Type or paste English sentences here..."
             className="w-full min-h-[160px] p-4 bg-transparent text-foreground placeholder:text-muted-foreground/60 resize-y focus:outline-none text-base md:text-lg leading-relaxed"
             disabled={translateMutation.isPending}
           />
@@ -70,7 +65,7 @@ export function TranslationForm({ onTranslateComplete }: TranslationFormProps) {
           type="submit"
           disabled={translateMutation.isPending || !text.trim()}
           className={cn(
-            "relative flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-white shadow-lg overflow-hidden transition-all duration-300 ease-out hover-elevate",
+            "relative flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-white shadow-lg overflow-hidden transition-all duration-300 ease-out",
             translateMutation.isPending ? "bg-muted text-muted-foreground shadow-none cursor-not-allowed" : "bg-primary hover:shadow-primary/25 hover:-translate-y-0.5 active:translate-y-0"
           )}
         >
@@ -81,7 +76,7 @@ export function TranslationForm({ onTranslateComplete }: TranslationFormProps) {
             </>
           ) : (
             <>
-              <span>Translate to ASL</span>
+              <span>Translate</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}

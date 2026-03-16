@@ -1,0 +1,105 @@
+import { motion } from "framer-motion";
+import { Sparkles, Tag, MessageSquare, Info } from "lucide-react";
+import type { TranslateResponse, TranslatedSentence } from "@workspace/api-client-react";
+import { cn } from "@/lib/utils";
+
+function StructureBadge({ type }: { type: TranslatedSentence["structureType"] }) {
+  return (
+    <span className={cn(
+      "px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider",
+      type === "topicalized" ? "bg-topic/15 text-topic" :
+      type === "OSV" ? "bg-orange-500/15 text-orange-600" :
+      "bg-primary/15 text-primary"
+    )}>
+      {type === "topicalized" ? "Topicalized" : type}
+    </span>
+  );
+}
+
+interface TranslationResultProps {
+  result: TranslateResponse;
+}
+
+export function TranslationResult({ result }: TranslationResultProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="space-y-6"
+    >
+      {/* Main ASL Output Block */}
+      <div className="bg-card rounded-2xl border border-border shadow-md overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-4 border-b border-border bg-primary/5">
+          <Sparkles className="w-4 h-4 text-primary" />
+          <span className="text-sm font-bold text-primary uppercase tracking-wider">ASL Topic-Comment Structure</span>
+        </div>
+        <div className="p-6 space-y-3">
+          {result.sentences.map((sentence, i) => (
+            <div key={i} className="flex flex-wrap items-baseline gap-1.5 text-xl md:text-2xl font-bold font-mono tracking-wide">
+              <span className="bg-topic/15 text-topic px-2 py-0.5 rounded">
+                {sentence.topic}
+              </span>
+              <span className="text-muted-foreground/50 text-base select-none">|</span>
+              <span className="bg-comment/15 text-comment px-2 py-0.5 rounded">
+                {sentence.comment}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Color Legend */}
+      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <Tag className="w-3.5 h-3.5 text-topic" />
+          <span className="text-topic font-semibold">Topic</span>
+          <span>— what is being talked about</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <MessageSquare className="w-3.5 h-3.5 text-comment" />
+          <span className="text-comment font-semibold">Comment</span>
+          <span>— what is said about it</span>
+        </div>
+      </div>
+
+      {/* Per-Sentence Breakdown */}
+      <div className="space-y-3">
+        {result.sentences.map((sentence, i) => (
+          <div key={i} className="bg-card rounded-xl border border-border/60 p-4 space-y-3">
+            {/* Original + badge row */}
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <p className="text-sm text-muted-foreground italic flex-1">
+                "{sentence.original}"
+              </p>
+              <StructureBadge type={sentence.structureType} />
+            </div>
+
+            {/* Full gloss */}
+            <p className="font-mono font-bold text-base text-foreground tracking-wide">
+              <span className="text-topic">{sentence.topic}</span>
+              {" "}
+              <span className="text-comment">{sentence.comment}</span>
+            </p>
+
+            {/* Grammar note */}
+            {sentence.notes && (
+              <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
+                <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                <span>{sentence.notes}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Summary */}
+      {result.summary && (
+        <p className="text-sm text-muted-foreground bg-secondary/50 rounded-xl px-4 py-3 border border-border/50">
+          <span className="font-semibold text-foreground">Summary: </span>
+          {result.summary}
+        </p>
+      )}
+    </motion.div>
+  );
+}

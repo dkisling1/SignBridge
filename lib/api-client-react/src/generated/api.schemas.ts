@@ -9,6 +9,47 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface DictionaryRequest {
+  /**
+   * The word to look up
+   * @minLength 1
+   * @maxLength 100
+   */
+  word: string;
+}
+
+export type DictionaryExampleSentenceStructureType =
+  (typeof DictionaryExampleSentenceStructureType)[keyof typeof DictionaryExampleSentenceStructureType];
+
+export const DictionaryExampleSentenceStructureType = {
+  SVO: "SVO",
+  OSV: "OSV",
+  topicalized: "topicalized",
+} as const;
+
+export interface DictionaryExampleSentence {
+  /** The example sentence in English */
+  english: string;
+  /** The topic portion in ASL gloss */
+  topic: string;
+  /** The comment portion in ASL gloss */
+  comment: string;
+  /** Full ASL gloss in Topic-Comment format */
+  aslStructure: string;
+  structureType: DictionaryExampleSentenceStructureType;
+  /** Grammar note for this sentence */
+  notes: string;
+}
+
+export interface DictionaryResponse {
+  word: string;
+  partOfSpeech: string;
+  definition: string;
+  /** How this sign is typically described or represented in ASL */
+  aslSign: string;
+  examples: DictionaryExampleSentence[];
+}
+
 export interface TranslateRequest {
   /**
    * English text to translate

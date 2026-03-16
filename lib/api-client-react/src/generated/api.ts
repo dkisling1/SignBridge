@@ -17,6 +17,8 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  DictionaryRequest,
+  DictionaryResponse,
   ErrorResponse,
   HealthStatus,
   TranslateRequest,
@@ -107,6 +109,92 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Look up a word with ASL example sentences
+ */
+export const getLookupWordUrl = () => {
+  return `/api/dictionary`;
+};
+
+export const lookupWord = async (
+  dictionaryRequest: DictionaryRequest,
+  options?: RequestInit,
+): Promise<DictionaryResponse> => {
+  return customFetch<DictionaryResponse>(getLookupWordUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(dictionaryRequest),
+  });
+};
+
+export const getLookupWordMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof lookupWord>>,
+    TError,
+    { data: BodyType<DictionaryRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof lookupWord>>,
+  TError,
+  { data: BodyType<DictionaryRequest> },
+  TContext
+> => {
+  const mutationKey = ["lookupWord"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof lookupWord>>,
+    { data: BodyType<DictionaryRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return lookupWord(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type LookupWordMutationResult = NonNullable<
+  Awaited<ReturnType<typeof lookupWord>>
+>;
+export type LookupWordMutationBody = BodyType<DictionaryRequest>;
+export type LookupWordMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Look up a word with ASL example sentences
+ */
+export const useLookupWord = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof lookupWord>>,
+    TError,
+    { data: BodyType<DictionaryRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof lookupWord>>,
+  TError,
+  { data: BodyType<DictionaryRequest> },
+  TContext
+> => {
+  return useMutation(getLookupWordMutationOptions(options));
+};
 
 /**
  * Translates English sentences into ASL Topic-Comment Structure format

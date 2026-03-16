@@ -16,6 +16,40 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
+ * @summary Look up a word with ASL example sentences
+ */
+export const lookupWordBodyWordMax = 100;
+
+export const LookupWordBody = zod.object({
+  word: zod
+    .string()
+    .min(1)
+    .max(lookupWordBodyWordMax)
+    .describe("The word to look up"),
+});
+
+export const LookupWordResponse = zod.object({
+  word: zod.string(),
+  partOfSpeech: zod.string(),
+  definition: zod.string(),
+  aslSign: zod
+    .string()
+    .describe("How this sign is typically described or represented in ASL"),
+  examples: zod.array(
+    zod.object({
+      english: zod.string().describe("The example sentence in English"),
+      topic: zod.string().describe("The topic portion in ASL gloss"),
+      comment: zod.string().describe("The comment portion in ASL gloss"),
+      aslStructure: zod
+        .string()
+        .describe("Full ASL gloss in Topic-Comment format"),
+      structureType: zod.enum(["SVO", "OSV", "topicalized"]),
+      notes: zod.string().describe("Grammar note for this sentence"),
+    }),
+  ),
+});
+
+/**
  * Translates English sentences into ASL Topic-Comment Structure format
  * @summary Translate text to ASL Topic-Comment Structure
  */

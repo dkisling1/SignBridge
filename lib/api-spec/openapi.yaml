@@ -25,6 +25,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dictionary:
+    post:
+      operationId: lookupWord
+      tags: [translate]
+      summary: Look up a word with ASL example sentences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DictionaryRequest"
+      responses:
+        "200":
+          description: Dictionary entry with ASL examples
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DictionaryResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /translate:
     post:
       operationId: translateToASL
@@ -65,6 +95,66 @@ components:
           type: string
       required:
         - status
+    DictionaryRequest:
+      type: object
+      properties:
+        word:
+          type: string
+          description: The word to look up
+          minLength: 1
+          maxLength: 100
+      required:
+        - word
+    DictionaryExampleSentence:
+      type: object
+      properties:
+        english:
+          type: string
+          description: The example sentence in English
+        topic:
+          type: string
+          description: The topic portion in ASL gloss
+        comment:
+          type: string
+          description: The comment portion in ASL gloss
+        aslStructure:
+          type: string
+          description: Full ASL gloss in Topic-Comment format
+        structureType:
+          type: string
+          enum: [SVO, OSV, topicalized]
+        notes:
+          type: string
+          description: Grammar note for this sentence
+      required:
+        - english
+        - topic
+        - comment
+        - aslStructure
+        - structureType
+        - notes
+    DictionaryResponse:
+      type: object
+      properties:
+        word:
+          type: string
+        partOfSpeech:
+          type: string
+        definition:
+          type: string
+        aslSign:
+          type: string
+          description: How this sign is typically described or represented in ASL
+        examples:
+          type: array
+          items:
+            $ref: "#/components/schemas/DictionaryExampleSentence"
+      required:
+        - word
+        - partOfSpeech
+        - definition
+        - aslSign
+        - examples
     TranslateRequest:
       type: object
       properties:

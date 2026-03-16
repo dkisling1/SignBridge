@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./dictionaryExampleSentence";
+export * from "./dictionaryExampleSentenceStructureType";
+export * from "./dictionaryRequest";
+export * from "./dictionaryResponse";
 export * from "./errorResponse";
 export * from "./healthStatus";
 export * from "./translatedSentence";
