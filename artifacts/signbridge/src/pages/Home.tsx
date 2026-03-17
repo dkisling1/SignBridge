@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className="space-y-10">
       {/* Hero */}
-      <section className="space-y-3 text-center max-w-3xl mx-auto pt-2">
+      <section className="space-y-3 text-center max-w-3xl mx-auto pt-2 print:hidden">
         <h2 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
           Bridge the gap to{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-topic">
@@ -24,10 +24,14 @@ export default function Home() {
       </section>
 
       {/* Educational Banner */}
-      <EducationalBanner />
+      <div className="print:hidden">
+        <EducationalBanner />
+      </div>
 
       {/* Input Form */}
-      <TranslationForm onTranslateComplete={setResult} />
+      <div className="print:hidden">
+        <TranslationForm onTranslateComplete={setResult} />
+      </div>
 
       {/* Results */}
       <AnimatePresence mode="wait">

@@ -189,3 +189,44 @@
 .bg-comment-gradient {
   background: linear-gradient(135deg, hsl(var(--comment)) 0%, hsl(var(--comment)/0.8) 100%);
 }
+
+/* Print Styles */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    background: white !important;
+    font-size: 12pt;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+
+  /* Preserve color-coded topic/comment badges */
+  [class*="bg-topic"] {
+    background-color: hsl(var(--topic) / 0.15) !important;
+    color: hsl(var(--topic)) !important;
+  }
+  [class*="bg-comment"] {
+    background-color: hsl(var(--comment) / 0.15) !important;
+    color: hsl(var(--comment)) !important;
+  }
+
+  /* Remove shadows and blur for clean print */
+  .shadow-md,
+  .shadow-sm,
+  .shadow-lg {
+    box-shadow: none !important;
+  }
+
+  /* Avoid page breaks inside cards */
+  .rounded-xl,
+  .rounded-2xl {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
