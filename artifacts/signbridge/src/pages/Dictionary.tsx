@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import type { DictionaryResponse, DictionaryExampleSentence } from "@workspace/api-client-react";
 import { PrintShareButtons } from "@/components/PrintShareButtons";
+import { saveToHistory } from "@/lib/saveToHistory";
 
 function StructureBadge({ type }: { type: DictionaryExampleSentence["structureType"] }) {
   return (
@@ -178,6 +179,7 @@ export default function Dictionary() {
     mutation: {
       onSuccess: (data) => {
         setEntry(data);
+        saveToHistory("dictionary", data.word, data);
       },
       onError: (error) => {
         toast({

@@ -131,6 +131,10 @@ export default function DictionaryScreen() {
       const data = await res.json();
       setResult(data);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      apiFetch("/history", {
+        method: "POST",
+        body: JSON.stringify({ type: "dictionary", query: data.word ?? word, result: data }),
+      }).catch(() => {});
     } catch (e: any) {
       setError(e.message || "Could not look up this word.");
     } finally {

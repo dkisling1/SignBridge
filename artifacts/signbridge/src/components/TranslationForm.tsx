@@ -7,7 +7,7 @@ import type { TranslateResponse } from "@workspace/api-client-react";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
 
 interface TranslationFormProps {
-  onTranslateComplete: (data: TranslateResponse) => void;
+  onTranslateComplete: (data: TranslateResponse, originalText: string) => void;
 }
 
 export function TranslationForm({ onTranslateComplete }: TranslationFormProps) {
@@ -17,7 +17,7 @@ export function TranslationForm({ onTranslateComplete }: TranslationFormProps) {
   const translateMutation = useTranslateToASL({
     mutation: {
       onSuccess: (data) => {
-        onTranslateComplete(data);
+        onTranslateComplete(data, text);
       },
       onError: (error) => {
         toast({

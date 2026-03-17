@@ -96,3 +96,29 @@ Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHea
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+
+## SignBridge Features
+
+### Authentication
+- Session-based auth with 3 roles: `master`, `admin`, `user`
+- Rolling 30-minute sessions; 30-day if "Remember me" checked
+- Master credentials: username `dkisling`, password `CCK4ever2@`
+
+### Web App (`artifacts/signbridge`)
+- **Translator** (`/`): English → ASL Topic-Comment structure, voice input, auto-saves to history
+- **Dictionary** (`/dictionary`): Word lookup with examples, auto-saves to history
+- **History** (`/history`): Search history catalog with folder organization, inline title editing, count limit of 100
+- **Accounts** (`/accounts`): Admin/master account management
+
+### Mobile App (`artifacts/signbridge-mobile`)
+- Tabs: Translate, Dictionary, Scan (OCR), History, Profile
+- History tab with folder chips, search filter, inline editing, move-to-folder modal
+- Dark/Light/System theme persisted in AsyncStorage
+
+### Search History (DB Schema)
+- `searches` table: id, userId, folderId (nullable), type, query, result (json), title, createdAt
+- `search_folders` table: id, userId, name, createdAt
+- Max 100 searches per user; AI-generated titles via OpenAI on save
+- Folders support create, rename (web), delete (web inline / mobile long-press)
+- History API routes in `artifacts/api-server/src/routes/history.ts`
+- Auto-save utility for web: `artifacts/signbridge/src/lib/saveToHistory.ts`

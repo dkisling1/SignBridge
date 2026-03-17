@@ -4,9 +4,15 @@ import { EducationalBanner } from "@/components/EducationalBanner";
 import { TranslationForm } from "@/components/TranslationForm";
 import { TranslationResult } from "@/components/TranslationResult";
 import type { TranslateResponse } from "@workspace/api-client-react";
+import { saveToHistory } from "@/lib/saveToHistory";
 
 export default function Home() {
   const [result, setResult] = useState<TranslateResponse | null>(null);
+
+  const handleTranslateComplete = (data: TranslateResponse, originalText: string) => {
+    setResult(data);
+    saveToHistory("translate", originalText, data);
+  };
 
   return (
     <div className="space-y-10">
@@ -30,7 +36,7 @@ export default function Home() {
 
       {/* Input Form */}
       <div className="print:hidden">
-        <TranslationForm onTranslateComplete={setResult} />
+        <TranslationForm onTranslateComplete={handleTranslateComplete} />
       </div>
 
       {/* Results */}

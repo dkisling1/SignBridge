@@ -18,7 +18,7 @@ function requireMaster(req: any, res: any, next: any) {
     res.status(401).json({ error: "Authentication required" });
     return;
   }
-  if (req.session.role !== "master") {
+  if (req.session.userRole !== "master") {
     res.status(403).json({ error: "Master account required" });
     return;
   }

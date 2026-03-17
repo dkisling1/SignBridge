@@ -5,11 +5,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
 import Dictionary from "@/pages/Dictionary";
 import Accounts from "@/pages/Accounts";
+import HistoryPage from "@/pages/History";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/Login";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { LogOut, Users, Loader2, Sun, Moon } from "lucide-react";
+import { LogOut, Users, Loader2, Sun, Moon, Clock } from "lucide-react";
 import { ThemeProvider, useTheme } from "next-themes";
 
 function BridgeIcon({ className }: { className?: string }) {
@@ -64,6 +65,7 @@ function Nav() {
   const mainTabs = [
     { href: "/", label: "Translator" },
     { href: "/dictionary", label: "Dictionary" },
+    { href: "/history", label: "History" },
   ];
 
   const canManageAccounts = user?.role === "master" || user?.role === "admin";
@@ -158,6 +160,7 @@ function ProtectedApp() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/dictionary" component={Dictionary} />
+          <Route path="/history" component={HistoryPage} />
           {canManageAccounts && (
             <Route path="/accounts" component={Accounts} />
           )}

@@ -123,6 +123,10 @@ export default function TranslateScreen() {
       const data = await res.json();
       setResult(data);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      apiFetch("/history", {
+        method: "POST",
+        body: JSON.stringify({ type: "translate", query: input.trim(), result: data }),
+      }).catch(() => {});
     } catch (e) {
       setError("Translation failed. Please check your connection and try again.");
     } finally {
