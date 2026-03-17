@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { apiFetch } from "@/constants/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 const ROLE_LABELS: Record<string, { label: string; color: string; bg: string; bgDark: string }> = {
   master: { label: "Master", color: "#DC2626", bg: "#FEE2E2", bgDark: "#3B0000" },
@@ -32,6 +33,8 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
+
+  const { themeMode, setThemeMode } = useAppTheme();
 
   const [howToSignEnabled, setHowToSignEnabled] = useState(true);
   const [togglingHowToSign, setTogglingHowToSign] = useState(false);
@@ -136,6 +139,46 @@ export default function ProfileScreen() {
                 {roleInfo.label}
               </Text>
             </View>
+          </View>
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+          Appearance
+        </Text>
+        <View style={[styles.featureCard, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginBottom: 24 }]}>
+          <View style={styles.themeRow}>
+            {(["light", "system", "dark"] as const).map((mode) => {
+              const active = themeMode === mode;
+              const label = mode === "light" ? "Light" : mode === "dark" ? "Dark" : "System";
+              const icon = mode === "light" ? "sun" : mode === "dark" ? "moon" : "monitor";
+              return (
+                <Pressable
+                  key={mode}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setThemeMode(mode);
+                  }}
+                  style={[
+                    styles.themeBtn,
+                    {
+                      backgroundColor: active
+                        ? colors.primary
+                        : isDark ? colors.inputBg : colors.background,
+                      borderColor: active ? colors.primary : colors.border,
+                    },
+                  ]}
+                >
+                  <Feather
+                    name={icon as any}
+                    size={16}
+                    color={active ? "#fff" : colors.textSecondary}
+                  />
+                  <Text style={[styles.themeBtnText, { color: active ? "#fff" : colors.textSecondary }]}>
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
         </View>
 
@@ -353,5 +396,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Inter_400Regular",
     lineHeight: 18,
+  },
+  themeRow: {
+    flexDirection: "row",
+    gap: 10,
+    padding: 12,
+  },
+  themeBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1.5,
+  },
+  themeBtnText: {
+    fontSize: 13,
+    fontFamily: "Inter_500Medium",
   },
 });

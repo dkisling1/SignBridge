@@ -9,7 +9,8 @@ import NotFound from "@/pages/not-found";
 import Login from "@/pages/Login";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { LogOut, Users, Loader2 } from "lucide-react";
+import { LogOut, Users, Loader2, Sun, Moon } from "lucide-react";
+import { ThemeProvider, useTheme } from "next-themes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,6 +20,19 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  return (
+    <button
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      title={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+    >
+      {resolvedTheme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+    </button>
+  );
+}
 
 function Nav() {
   const [location] = useLocation();
@@ -73,6 +87,8 @@ function Nav() {
               </span>
             </Link>
           )}
+
+          <ThemeToggle />
 
           <div className="flex items-center gap-2 pl-2 border-l border-border">
             <div className="text-right hidden sm:block">
@@ -134,16 +150,18 @@ function ProtectedApp() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <ProtectedApp />
-          </WouterRouter>
-          <Toaster />
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <ProtectedApp />
+            </WouterRouter>
+            <Toaster />
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 
