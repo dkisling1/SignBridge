@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { UserPlus, Trash2, Loader2, ShieldCheck, User, Crown } from "lucide-react";
+import { UserPlus, Trash2, Loader2, ShieldCheck, User, Crown, Settings, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Account {
@@ -42,6 +42,10 @@ export default function Accounts() {
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  const [howToSignEnabled, setHowToSignEnabled] = useState(true);
+  const [togglingHowToSign, setTogglingHowToSign] = useState(false);
+  const [settingsMsg, setSettingsMsg] = useState("");
+
   const canCreateAdmin = user?.role === "master";
   const availableRoles: Array<"admin" | "user"> = canCreateAdmin ? ["admin", "user"] : ["user"];
 
@@ -59,9 +63,42 @@ export default function Accounts() {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch("/api/settings", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setHowToSignEnabled(data.howToSignEnabled !== "false");
+      }
+    } catch {}
+  };
+
   useEffect(() => {
     fetchAccounts();
-  }, []);
+    if (user?.role === "master") fetchSettings();
+  }, [user]);
+
+  const toggleHowToSign = async () => {
+    setTogglingHowToSign(true);
+    setSettingsMsg("");
+    const next = !howToSignEnabled;
+    try {
+      const res = await fetch("/api/settings/howToSignEnabled", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: next ? "true" : "false" }),
+      });
+      if (!res.ok) throw new Error("Failed to update setting");
+      setHowToSignEnabled(next);
+      setSettingsMsg(next ? "How to Sign enabled for all users." : "How to Sign hidden from all users.");
+      setTimeout(() => setSettingsMsg(""), 3000);
+    } catch {
+      setSettingsMsg("Failed to update setting. Please try again.");
+    } finally {
+      setTogglingHowToSign(false);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,6 +159,59 @@ export default function Accounts() {
             : "Create and manage user accounts."}
         </p>
       </section>
+
+      {/* Feature Settings — master only */}
+      {user?.role === "master" && (
+        <div className="bg-card rounded-2xl border border-border shadow-md p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Settings className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold text-foreground text-lg">Feature Settings</h3>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Control which features are available to all users platform-wide.
+          </p>
+
+          <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-background">
+            <div className="flex items-start gap-3">
+              <Eye className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-foreground text-sm">How to Sign</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Show physical sign descriptions from ASLBloom in dictionary results. When off, only definitions and examples are shown.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={toggleHowToSign}
+              disabled={togglingHowToSign}
+              className={cn(
+                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40 shrink-0 ml-4",
+                howToSignEnabled ? "bg-primary" : "bg-muted-foreground/30",
+                togglingHowToSign && "opacity-60 cursor-wait"
+              )}
+              title={howToSignEnabled ? "Click to disable" : "Click to enable"}
+            >
+              <span
+                className={cn(
+                  "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
+                  howToSignEnabled ? "translate-x-6" : "translate-x-1"
+                )}
+              />
+            </button>
+          </div>
+
+          {settingsMsg && (
+            <p className={cn(
+              "text-sm px-3 py-2 rounded-lg",
+              settingsMsg.startsWith("Failed")
+                ? "text-destructive bg-destructive/10"
+                : "text-primary bg-primary/10"
+            )}>
+              {settingsMsg}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Create Account Form */}
       <div className="bg-card rounded-2xl border border-border shadow-md p-6 space-y-5">

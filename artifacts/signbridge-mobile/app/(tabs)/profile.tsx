@@ -1,13 +1,14 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   useColorScheme,
   View,
@@ -15,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
+import { apiFetch } from "@/constants/api";
 import { useAuth } from "@/contexts/AuthContext";
 
 const ROLE_LABELS: Record<string, { label: string; color: string; bg: string; bgDark: string }> = {
@@ -31,7 +33,47 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
 
+  const [howToSignEnabled, setHowToSignEnabled] = useState(true);
+  const [togglingHowToSign, setTogglingHowToSign] = useState(false);
+  const [settingsMsg, setSettingsMsg] = useState("");
+
   const roleInfo = user ? (ROLE_LABELS[user.role] || ROLE_LABELS.user) : ROLE_LABELS.user;
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      const res = await apiFetch("/settings");
+      if (res.ok) {
+        const data = await res.json();
+        setHowToSignEnabled(data.howToSignEnabled !== "false");
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (user?.role === "master") {
+      fetchSettings();
+    }
+  }, [user, fetchSettings]);
+
+  const toggleHowToSign = useCallback(async (next: boolean) => {
+    setTogglingHowToSign(true);
+    setSettingsMsg("");
+    try {
+      const res = await apiFetch("/settings/howToSignEnabled", {
+        method: "PUT",
+        body: JSON.stringify({ value: next ? "true" : "false" }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setHowToSignEnabled(next);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSettingsMsg(next ? "How to Sign enabled for all users." : "How to Sign hidden from all users.");
+      setTimeout(() => setSettingsMsg(""), 3000);
+    } catch {
+      setSettingsMsg("Could not update setting. Please try again.");
+    } finally {
+      setTogglingHowToSign(false);
+    }
+  }, []);
 
   const handleLogout = () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -117,6 +159,44 @@ export default function ProfileScreen() {
             </View>
           ))}
         </View>
+
+        {user?.role === "master" && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+              Feature Settings
+            </Text>
+            <View style={[styles.featureCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <View style={styles.featureRow}>
+                <View style={[styles.featureIcon, { backgroundColor: isDark ? "#0A3D37" : "#CCFBF1" }]}>
+                  <Feather name="eye" size={18} color={colors.primary} />
+                </View>
+                <View style={styles.featureText}>
+                  <Text style={[styles.featureLabel, { color: colors.text }]}>How to Sign</Text>
+                  <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>
+                    Show physical sign descriptions in dictionary
+                  </Text>
+                </View>
+                <Switch
+                  value={howToSignEnabled}
+                  onValueChange={toggleHowToSign}
+                  disabled={togglingHowToSign}
+                  trackColor={{ false: colors.border, true: colors.primaryLight }}
+                  thumbColor={howToSignEnabled ? colors.primary : colors.textMuted}
+                  ios_backgroundColor={colors.border}
+                />
+              </View>
+              {settingsMsg ? (
+                <View style={[styles.settingsMsgRow, { borderColor: colors.border }]}>
+                  <Text style={[styles.settingsMsg, {
+                    color: settingsMsg.startsWith("Could") ? colors.error : colors.primary
+                  }]}>
+                    {settingsMsg}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          </>
+        )}
 
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
           About
@@ -264,4 +344,14 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   logoutText: { fontSize: 16, fontFamily: "Inter_600SemiBold" },
+  settingsMsgRow: {
+    borderTopWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  settingsMsg: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 18,
+  },
 });

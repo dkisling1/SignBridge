@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { LookupWordBody } from "@workspace/api-zod";
 import * as cheerio from "cheerio";
+import { getSetting } from "./settings";
 
 const router: IRouter = Router();
 
@@ -152,9 +153,13 @@ router.post("/dictionary", async (req, res) => {
   const { word } = parseResult.data;
 
   try {
-    const aslBloomSign = await fetchAslBloomSign(word);
+    const [aslBloomSign, howToSignEnabled] = await Promise.all([
+      fetchAslBloomSign(word),
+      getSetting("howToSignEnabled"),
+    ]);
+    const showHowToSign = howToSignEnabled !== "false";
 
-    if (aslBloomSign) {
+    if (aslBloomSign && showHowToSign) {
       const completion = await openai.chat.completions.create({
         model: "gpt-5.2",
         max_completion_tokens: 4096,
@@ -192,6 +197,9 @@ router.post("/dictionary", async (req, res) => {
       }
 
       const parsed = JSON.parse(raw);
+      if (!showHowToSign) {
+        delete parsed.aslSign;
+      }
       res.json(parsed);
     }
   } catch (err) {

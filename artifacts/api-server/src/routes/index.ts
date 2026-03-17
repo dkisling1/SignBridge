@@ -6,6 +6,7 @@ import authRouter from "./auth";
 import accountsRouter from "./accounts";
 import transcribeRouter from "./transcribe";
 import ocrRouter from "./ocr";
+import settingsRouter from "./settings";
 
 const router: IRouter = Router();
 
@@ -13,6 +14,7 @@ router.use(authRouter);
 router.use(accountsRouter);
 router.use(transcribeRouter);
 router.use(ocrRouter);
+router.use(settingsRouter);
 router.use(healthRouter);
 router.use(translateRouter);
 router.use(dictionaryRouter);
