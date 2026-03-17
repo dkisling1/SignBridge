@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/mobile/"
+title = "SignBridge Mobile"
+version = "1.0.0"
+id = "artifacts/signbridge-mobile"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+localPort = 21974
+name = "expo"
+paths = ["/mobile/"]
+
+[services.development]
+run = "pnpm --filter @workspace/signbridge-mobile run dev"
+
+[services.env]
+PORT = "21974"
+BASE_PATH = "/mobile/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/signbridge-mobile", "run", "build"]
+run = ["pnpm", "--filter", "@workspace/signbridge-mobile", "run", "serve"]
