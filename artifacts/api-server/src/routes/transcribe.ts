@@ -5,15 +5,16 @@ import { requireAuth } from "../middleware/auth";
 const router: IRouter = Router();
 
 router.post("/transcribe", requireAuth, async (req, res) => {
-  const { audioBase64, mimeType = "audio/m4a" } = req.body;
+  const { audioBase64, audio, mimeType = "audio/m4a" } = req.body;
+  const audioData = audioBase64 || audio;
 
-  if (!audioBase64) {
-    res.status(400).json({ error: "audioBase64 is required." });
+  if (!audioData) {
+    res.status(400).json({ error: "Audio data is required." });
     return;
   }
 
   try {
-    const buffer = Buffer.from(audioBase64, "base64");
+    const buffer = Buffer.from(audioData, "base64");
     const ext = mimeType.includes("mp4") || mimeType.includes("m4a") ? "m4a" :
                 mimeType.includes("webm") ? "webm" :
                 mimeType.includes("ogg") ? "ogg" :

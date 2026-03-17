@@ -5,17 +5,18 @@ import { requireAuth } from "../middleware/auth";
 const router: IRouter = Router();
 
 router.post("/ocr", requireAuth, async (req, res) => {
-  const { imageBase64, mimeType = "image/jpeg" } = req.body;
+  const { imageBase64, image, mimeType = "image/jpeg" } = req.body;
+  const imageData = imageBase64 || image;
 
-  if (!imageBase64) {
-    res.status(400).json({ error: "imageBase64 is required." });
+  if (!imageData) {
+    res.status(400).json({ error: "Image data is required." });
     return;
   }
 
   try {
-    const dataUrl = imageBase64.startsWith("data:")
-      ? imageBase64
-      : `data:${mimeType};base64,${imageBase64}`;
+    const dataUrl = imageData.startsWith("data:")
+      ? imageData
+      : `data:${mimeType};base64,${imageData}`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",

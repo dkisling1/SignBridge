@@ -2,6 +2,29 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, LogIn } from "lucide-react";
 
+function BridgeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="2" y1="15" x2="22" y2="15" />
+      <line x1="7" y1="7" x2="7" y2="19" />
+      <line x1="17" y1="7" x2="17" y2="19" />
+      <line x1="7" y1="7" x2="2" y2="15" />
+      <line x1="7" y1="7" x2="12" y2="15" />
+      <line x1="17" y1="7" x2="12" y2="15" />
+      <line x1="17" y1="7" x2="22" y2="15" />
+    </svg>
+  );
+}
+
 interface LoginProps {
   onSuccess?: () => void;
 }
@@ -10,6 +33,7 @@ export default function Login({ onSuccess }: LoginProps) {
   const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +43,7 @@ export default function Login({ onSuccess }: LoginProps) {
     setError("");
     setLoading(true);
     try {
-      await login(username.trim(), password);
+      await login(username.trim(), password, remember);
       onSuccess?.();
     } catch (err: any) {
       setError(err.message ?? "Login failed.");
@@ -34,7 +58,7 @@ export default function Login({ onSuccess }: LoginProps) {
         {/* Brand */}
         <div className="text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg mx-auto">
-            <span className="text-primary-foreground font-bold text-3xl leading-none">S</span>
+            <BridgeIcon className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="font-display text-3xl font-extrabold text-foreground">SignBridge</h1>
           <p className="text-muted-foreground text-sm">Sign in to continue</p>
@@ -73,6 +97,20 @@ export default function Login({ onSuccess }: LoginProps) {
               disabled={loading}
               className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-colors"
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              id="remember"
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              disabled={loading}
+              className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+            />
+            <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer select-none">
+              Remember my login info
+            </label>
           </div>
 
           {error && (

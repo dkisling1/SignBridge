@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
 import { useAuth } from "@/contexts/AuthContext";
+import { BridgeIcon } from "@/components/BridgeIcon";
 
 export default function LoginScreen() {
   const colorScheme = useColorScheme();
@@ -28,6 +29,7 @@ export default function LoginScreen() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,7 +42,7 @@ export default function LoginScreen() {
     setError("");
     setLoading(true);
     try {
-      await login(username.trim(), password);
+      await login(username.trim(), password, remember);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace("/(tabs)");
     } catch (e: any) {
@@ -66,7 +68,7 @@ export default function LoginScreen() {
       >
         <View style={styles.brandRow}>
           <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
-            <Feather name="eye" size={28} color="#fff" />
+            <BridgeIcon size={36} color="#fff" />
           </View>
         </View>
 
@@ -138,6 +140,29 @@ export default function LoginScreen() {
               </Pressable>
             </View>
           </View>
+
+          <Pressable
+            style={styles.rememberRow}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setRemember((v) => !v);
+            }}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: remember }}
+          >
+            <View style={[
+              styles.checkbox,
+              {
+                backgroundColor: remember ? colors.primary : "transparent",
+                borderColor: remember ? colors.primary : colors.inputBorder,
+              },
+            ]}>
+              {remember && <Feather name="check" size={12} color="#fff" />}
+            </View>
+            <Text style={[styles.rememberText, { color: colors.textSecondary }]}>
+              Remember my login info
+            </Text>
+          </Pressable>
 
           <Pressable
             style={({ pressed }) => [
@@ -247,6 +272,24 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontFamily: "Inter_600SemiBold",
+  },
+  rememberRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 5,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rememberText: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    flex: 1,
   },
   footer: {
     marginTop: 40,

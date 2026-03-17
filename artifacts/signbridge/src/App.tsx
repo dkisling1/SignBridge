@@ -12,6 +12,29 @@ import { cn } from "@/lib/utils";
 import { LogOut, Users, Loader2, Sun, Moon } from "lucide-react";
 import { ThemeProvider, useTheme } from "next-themes";
 
+function BridgeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="2" y1="15" x2="22" y2="15" />
+      <line x1="7" y1="7" x2="7" y2="19" />
+      <line x1="17" y1="7" x2="17" y2="19" />
+      <line x1="7" y1="7" x2="2" y2="15" />
+      <line x1="7" y1="7" x2="12" y2="15" />
+      <line x1="17" y1="7" x2="12" y2="15" />
+      <line x1="17" y1="7" x2="22" y2="15" />
+    </svg>
+  );
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -50,7 +73,7 @@ function Nav() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-inner">
-            <span className="text-primary-foreground font-bold text-lg leading-none">S</span>
+            <BridgeIcon className="w-5 h-5 text-primary-foreground" />
           </div>
           <span className="font-bold text-xl tracking-tight text-foreground">SignBridge</span>
         </div>

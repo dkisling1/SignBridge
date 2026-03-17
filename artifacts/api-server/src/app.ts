@@ -19,10 +19,11 @@ app.use(session({
   secret: process.env.SESSION_SECRET ?? "signbridge-secret-key-change-in-prod",
   resave: false,
   saveUninitialized: false,
+  rolling: true,
   cookie: {
     httpOnly: true,
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 30 * 60 * 1000,
   },
 }));
 

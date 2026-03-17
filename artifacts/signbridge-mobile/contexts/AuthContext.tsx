@@ -18,7 +18,7 @@ interface User {
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, remember?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await apiFetch("/auth/me");
       if (res.ok) {
         const data = await res.json();
-        setUser(data.user);
+        setUser(data ?? null);
       } else {
         setUser(null);
       }
@@ -49,17 +49,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refresh();
   }, [refresh]);
 
-  const login = useCallback(async (username: string, password: string) => {
+  const login = useCallback(async (username: string, password: string, remember?: boolean) => {
     const res = await apiFetch("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, remember: !!remember }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Login failed");
     }
     const data = await res.json();
-    setUser(data.user);
+    setUser(data ?? null);
   }, []);
 
   const logout = useCallback(async () => {

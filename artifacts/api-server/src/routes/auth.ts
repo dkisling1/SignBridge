@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 const router: IRouter = Router();
 
 router.post("/auth/login", async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, remember } = req.body;
   if (!username || !password) {
     res.status(400).json({ error: "Username and password are required." });
     return;
@@ -33,6 +33,10 @@ router.post("/auth/login", async (req, res) => {
     req.session.userId = user.id;
     req.session.username = user.username;
     req.session.userRole = user.role;
+
+    if (remember) {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+    }
 
     res.json({
       id: user.id,

@@ -19,6 +19,7 @@ import Colors from "@/constants/colors";
 import { apiFetch } from "@/constants/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { BridgeIcon } from "@/components/BridgeIcon";
 
 const ROLE_LABELS: Record<string, { label: string; color: string; bg: string; bgDark: string }> = {
   master: { label: "Master", color: "#DC2626", bg: "#FEE2E2", bgDark: "#3B0000" },
@@ -246,7 +247,7 @@ export default function ProfileScreen() {
         </Text>
         <View style={[styles.aboutCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <View style={styles.aboutRow}>
-            <Feather name="eye" size={20} color={colors.primary} />
+            <BridgeIcon size={20} color={colors.primary} />
             <View style={{ flex: 1 }}>
               <Text style={[styles.aboutTitle, { color: colors.text }]}>SignBridge</Text>
               <Text style={[styles.aboutDesc, { color: colors.textSecondary }]}>
