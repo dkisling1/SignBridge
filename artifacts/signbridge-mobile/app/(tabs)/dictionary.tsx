@@ -268,12 +268,6 @@ export default function DictionaryScreen() {
               <Text style={[styles.description, { color: colors.textSecondary }]}>
                 {result.definition}
               </Text>
-
-              {result.aslSign && (
-                <View style={[styles.fieldSection, { borderColor: colors.border }]}>
-                  <Field icon="eye" label="How to Sign" value={result.aslSign} />
-                </View>
-              )}
             </View>
 
             {result.examples && result.examples.length > 0 && (

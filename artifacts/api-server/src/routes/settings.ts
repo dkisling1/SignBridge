@@ -25,9 +25,7 @@ function requireMaster(req: any, res: any, next: any) {
   next();
 }
 
-const DEFAULTS: Record<string, string> = {
-  howToSignEnabled: "true",
-};
+const DEFAULTS: Record<string, string> = {};
 
 router.get("/settings", requireAuth, async (req, res) => {
   try {

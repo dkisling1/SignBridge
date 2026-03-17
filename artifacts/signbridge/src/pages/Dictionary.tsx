@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Loader2, Tag, MessageSquare, Info, BookOpen, Hand } from "lucide-react";
+import { Search, Loader2, Tag, MessageSquare, Info, BookOpen } from "lucide-react";
 import { useLookupWord } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -84,8 +84,6 @@ function buildDictionaryShareText(entry: DictionaryResponse): string {
     `Part of speech: ${entry.partOfSpeech}`,
     `Definition: ${entry.definition}`,
     "",
-    `ASL Sign: ${entry.aslSign}`,
-    "",
     "Examples:",
   ];
 
@@ -131,14 +129,6 @@ function DictionaryEntry({ entry }: { entry: DictionaryResponse }) {
           />
         </div>
 
-        {/* ASL Sign description */}
-        <div className="px-6 py-4 bg-primary/5 flex items-start gap-3">
-          <Hand className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-          <div>
-            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">ASL Sign</p>
-            <p className="text-sm text-foreground/80">{entry.aslSign}</p>
-          </div>
-        </div>
       </div>
 
       {/* Example sentences */}
