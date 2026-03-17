@@ -4,8 +4,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
 import Dictionary from "@/pages/Dictionary";
+import Accounts from "@/pages/Accounts";
 import NotFound from "@/pages/not-found";
+import Login from "@/pages/Login";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { LogOut, Users, Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,16 +22,19 @@ const queryClient = new QueryClient({
 
 function Nav() {
   const [location] = useLocation();
+  const { user, logout } = useAuth();
 
-  const tabs = [
+  const mainTabs = [
     { href: "/", label: "Translator" },
     { href: "/dictionary", label: "Dictionary" },
   ];
 
+  const canManageAccounts = user?.role === "master" || user?.role === "admin";
+
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-sm print:hidden">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-inner">
             <span className="text-primary-foreground font-bold text-lg leading-none">S</span>
           </div>
@@ -35,7 +42,7 @@ function Nav() {
         </div>
 
         <nav className="flex items-center gap-1 bg-secondary/50 rounded-xl p-1">
-          {tabs.map((tab) => {
+          {mainTabs.map((tab) => {
             const active = location === tab.href || (tab.href !== "/" && location.startsWith(tab.href));
             return (
               <Link key={tab.href} href={tab.href}>
@@ -51,12 +58,60 @@ function Nav() {
             );
           })}
         </nav>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {canManageAccounts && (
+            <Link href="/accounts">
+              <span className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-colors",
+                location.startsWith("/accounts")
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}>
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Accounts</span>
+              </span>
+            </Link>
+          )}
+
+          <div className="flex items-center gap-2 pl-2 border-l border-border">
+            <div className="text-right hidden sm:block">
+              <p className="text-xs font-semibold text-foreground leading-none">{user?.username}</p>
+              <p className="text-xs text-muted-foreground capitalize leading-none mt-0.5">{user?.role}</p>
+            </div>
+            <button
+              onClick={logout}
+              title="Sign out"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign out</span>
+            </button>
+          </div>
+        </div>
       </div>
     </header>
   );
 }
 
-function Router() {
+function ProtectedApp() {
+  const { user, loading } = useAuth();
+  const [, navigate] = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login onSuccess={() => navigate("/")} />;
+  }
+
+  const canManageAccounts = user.role === "master" || user.role === "admin";
+
   return (
     <>
       <Nav />
@@ -64,6 +119,9 @@ function Router() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/dictionary" component={Dictionary} />
+          {canManageAccounts && (
+            <Route path="/accounts" component={Accounts} />
+          )}
           <Route component={NotFound} />
         </Switch>
       </main>
@@ -78,10 +136,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
+        <AuthProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <ProtectedApp />
+          </WouterRouter>
+          <Toaster />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
